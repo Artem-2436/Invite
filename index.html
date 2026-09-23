@@ -142,6 +142,7 @@
             color: white;
             font-size: 14px;
             font-weight: 500;
+
         }
 
         .window-controls {
@@ -220,6 +221,129 @@
                 left: 2.5% !important;
             }
         }
+        /* === DESKTOP ICONS === */
+#desktop-icons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 100px);
+    gap: 25px 15px;
+    padding: 20px;
+    width: 100%;
+    height: calc(100% - 80px); /* Учитываем taskbar */
+    align-content: start;
+    overflow-y: auto;
+}
+
+.desktop-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    user-select: none;
+    width: 100px;
+}
+
+.desktop-icon:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+}
+
+.desktop-icon:active {
+    transform: scale(0.95);
+}
+
+.icon-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.icon-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+    border-radius: 14px;
+}
+
+.desktop-icon:hover .icon-image {
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.35), 0 0 20px rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.icon-emoji {
+    font-size: 30px;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.icon-label {
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* === DESKTOP ICONS RESPONSIVE === */
+@media (max-width: 768px) {
+    #desktop-icons {
+        grid-template-columns: repeat(auto-fill, 90px);
+        gap: 20px 10px;
+        padding: 15px;
+        height: calc(100% - 70px);
+    }
+
+    .desktop-icon {
+        width: 90px;
+        padding: 8px;
+    }
+
+    .icon-image {
+        width: 55px;
+        height: 55px;
+    }
+
+    .icon-emoji {
+        font-size: 26px;
+    }
+
+    .icon-label {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    #desktop-icons {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px 8px;
+        padding: 10px;
+        justify-items: center;
+    }
+
+    .desktop-icon {
+        width: 100%;
+        max-width: 90px;
+    }
+}
     </style>
 </head>
 <body>
