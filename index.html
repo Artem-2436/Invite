@@ -430,8 +430,200 @@
     </div>
 
     <!-- === JAVASCRIPT === -->
+    
+        <!-- === JAVASCRIPT LOGIC === -->
     <script>
-        // Пустая заглушка для JS логики (Блок 4+)
+        /* === CONFIGURATION & STATE === */
+        const APPS = {
+            invitations: { title: 'Приглашения', content: '<h2>Входящие приглашения</h2><p>У вас 3 новых запроса.</p>' },
+            calendar: { title: 'Календарь', content: '<h2>Сентябрь 2026</h2><p>Ближайшее событие: Релиз OS.</p>' },
+            contacts: { title: 'Контакты', content: '<h2>Список контактов</h2><ul><li>Алексей</li><li>Мария</li><li>Дмитрий</li></ul>' },
+            notes: { title: 'Заметки', content: '<h2>Мои заметки</h2><textarea style="width:100%; height:80%; background:transparent; color:white; border:none; resize:none;">Купить молоко...\nПозвонить клиенту...</textarea>' },
+            gallery: { title: 'Галерея', content: '<h2>Фотографии</h2><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><div style="height:100px; background:#444;"></div><div style="height:100px; background:#555;"></div></div>' },
+            design: { title: 'Дизайн-студия', content: '<h2>Инструменты дизайна</h2><p>Холст готов к работе.</p>' },
+            stats: { title: 'Статистика', content: '<h2>Аналитика</h2><p>Посещаемость выросла на 15%.</p>' },
+            settings: { title: 'Настройки', content: '<h2>Системные настройки</h2><label><input type="checkbox"> Темная тема (всегда вкл)</label>' }
+        };
+
+        let zIndexCounter = 1000;
+        let activeWindow = null;
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+        let currentDragWindow = null;
+
+        /* === CLOCK FUNCTIONALITY === */
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call
+
+        /* === WINDOW MANAGEMENT SYSTEM === */
+        
+        // 1. Open Window
+        function openWindow(appId) {
+            const appData = APPS[appId];
+            if (!appData) return;
+
+            // Check if window already exists
+            let win = document.getElementById(`window-${appId}`);
+            
+            if (win) {
+                // If minimized, restore it
+                if (win.style.display === 'none') {
+                    win.style.display = 'block';
+                    bringToFront(win);
+                } else {
+                    // If already open and visible, just bring to front
+                    bringToFront(win);
+                }
+                return;
+            }
+
+            // Create new window DOM structure
+            win = document.createElement('div');
+            win.id = `window-${appId}`;
+            win.className = 'window active';
+            win.style.zIndex = ++zIndexCounter;
+            
+            // Random initial position for "natural" feel
+            const randomX = 50 + Math.random() * 100;
+            const randomY = 50 + Math.random() * 100;
+            win.style.left = `${randomX}px`;
+            win.style.top = `${randomY}px`;
+            win.style.width = '500px';
+            win.style.height = '400px';
+
+            win.innerHTML = `
+                <div class="window-header">
+                    <span class="window-title">${appData.title}</span>
+                    <div class="window-controls">
+                        <div class="window-control-btn btn-minimize" onclick="minimizeWindow('${appId}')"></div>
+                        <div class="window-control-btn btn-maximize" onclick="maximizeWindow('${appId}')"></div>
+                        <div class="window-control-btn btn-close" onclick="closeWindow('${appId}')"></div>
+                    </div>
+                </div>
+                <div class="window-content">
+                    ${appData.content}
+                </div>
+            `;
+
+            // Add event listeners for interaction
+            win.addEventListener('mousedown', () => bringToFront(win));
+            
+            const header = win.querySelector('.window-header');
+            header.addEventListener('mousedown', (e) => startDrag(e, win));
+
+            document.getElementById('windows-container').appendChild(win);
+            bringToFront(win);
+            
+            // Add to taskbar (visual indicator logic can be added here later)
+        }
+
+        // 2. Close Window
+        window.closeWindow = function(appId) {
+            const win = document.getElementById(`window-${appId}`);
+            if (win) {
+                win.remove();
+            }
+        };
+
+        // 3. Minimize Window (Hide)
+        window.minimizeWindow = function(appId) {
+            const win = document.getElementById(`window-${appId}`);
+            if (win) {
+                win.style.display = 'none';
+            }
+        };
+
+        // 4. Maximize/Restore Window
+        window.maximizeWindow = function(appId) {
+            const win = document.getElementById(`window-${appId}`);
+            if (!win) return;
+
+            if (win.dataset.maximized === 'true') {
+                // Restore
+                win.style.width = win.dataset.prevWidth;
+                win.style.height = win.dataset.prevHeight;
+                win.style.top = win.dataset.prevTop;
+                win.style.left = win.dataset.prevLeft;
+                win.dataset.maximized = 'false';
+            } else {
+                // Maximize
+                win.dataset.prevWidth = win.style.width;
+                win.dataset.prevHeight = win.style.height;
+                win.dataset.prevTop = win.style.top;
+                win.dataset.prevLeft = win.style.left;
+                
+                win.style.width = '100%';
+                win.style.height = 'calc(100% - 60px)'; // Minus taskbar
+                win.style.top = '0';
+                win.style.left = '0';
+                win.dataset.maximized = 'true';
+            }
+        };
+
+        // 5. Bring to Front
+        function bringToFront(win) {
+            if (activeWindow === win) return;
+            zIndexCounter++;
+            win.style.zIndex = zIndexCounter;
+            activeWindow = win;
+        }
+
+        /* === DRAG AND DROP LOGIC === */
+        function startDrag(e, win) {
+            // Prevent dragging if maximized
+            if (win.dataset.maximized === 'true') return;
+            
+            // Only drag if clicking the header (not controls)
+            if (e.target.closest('.window-controls')) return;
+
+            isDragging = true;
+            currentDragWindow = win;
+            
+            // Calculate offset relative to the window
+            const rect = win.getBoundingClientRect();
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+
+            bringToFront(win);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging || !currentDragWindow) return;
+
+            let newX = e.clientX - dragOffset.x;
+            let newY = e.clientY - dragOffset.y;
+
+            // Boundary checks (optional, keeps window somewhat on screen)
+            // const maxX = window.innerWidth - currentDragWindow.offsetWidth;
+            // const maxY = window.innerHeight - 60 - currentDragWindow.offsetHeight; // 60 is taskbar
+            
+            // Simple constraints
+            if (newY < 0) newY = 0;
+            
+            currentDragWindow.style.left = `${newX}px`;
+            currentDragWindow.style.top = `${newY}px`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            currentDragWindow = null;
+        });
+
+        /* === DESKTOP ICONS EVENT LISTENERS === */
+        document.querySelectorAll('.desktop-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const appId = icon.getAttribute('data-app');
+                openWindow(appId);
+            });
+        });
+
     </script>
+    
 </body>
 </html>
