@@ -344,6 +344,113 @@
         max-width: 90px;
     }
 }
+        /* === ANIMATIONS === */
+@keyframes windowOpen {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes windowClose {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
+}
+
+.window.active {
+    animation: windowOpen 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.window.closing {
+    animation: windowClose 0.15s ease-in forwards;
+    pointer-events: none;
+}
+
+/* Prevent text selection while dragging */
+body.dragging {
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grabbing !important;
+}
+
+.window-header:active {
+    cursor: grabbing;
+}
+
+/* === CONTEXT MENU === */
+#context-menu {
+    position: fixed;
+    display: none;
+    min-width: 180px;
+    background: rgba(30, 30, 40, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 6px;
+    z-index: 99999;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: ctxFadeIn 0.15s ease-out;
+}
+
+@keyframes ctxFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.ctx-item {
+    padding: 8px 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s;
+}
+
+.ctx-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.ctx-separator {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 4px 8px;
+}
+
+/* === TASKBAR ACTIVE INDICATOR === */
+.taskbar-app-indicator {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.taskbar-app-indicator:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.taskbar-app-indicator.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 3px;
+    background: #764ba2;
+    border-radius: 2px;
+}
+
+.taskbar-app-indicator .icon-emoji {
+    font-size: 20px;
+}
     </style>
 </head>
 <body>
